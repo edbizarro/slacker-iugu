@@ -2,6 +2,8 @@
 
 namespace Edbizarro\Slacker\Iugu\Providers;
 
+use Edbizarro\Slacker\Iugu\Contracts\IuguServiceContract;
+use Edbizarro\Slacker\Iugu\Services\IuguService;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -25,6 +27,22 @@ class SlackerIuguServiceProvider extends ServiceProvider
         }
 
         $this->mergeConfigFrom(__DIR__.'/../../config/slash-command-iugu-handler.php', 'slash-command-iugu-handler');
+    }
+
+    public function register()
+    {
+        $this->app->bind(IuguServiceContract::class, function ($app) {
+            return new IuguService;
+        });
+
+        $this->app->singleton('iugu-service', function ($app) {
+            return new IuguService;
+        });
+    }
+
+    public function provides()
+    {
+        return [IuguServiceContract::class];
     }
 
     /**

@@ -1,6 +1,8 @@
 <?php
+
 namespace Edbizarro\Slacker\Iugu\Handlers;
 
+use Edbizarro\Slacker\Iugu\Services\IuguService;
 use Illuminate\Support\Collection;
 use Iugu;
 use Iugu_Customer;
@@ -12,22 +14,28 @@ use Spatie\SlashCommand\Handlers\SignatureHandler;
 
 /**
  * Class IuguCustomerHandler.
- *
- * @package Edbizarro\Slacker\Iugu\Handlers
  */
 class IuguCustomerHandler extends SignatureHandler
 {
-    protected $signature = "* iugu:customer:info {customerEmail}";
+    protected $signature = '* iugu:customer:info {customerEmail}';
 
-    protected $description = "Get customer information.";
+    protected $description = 'Get customer information.';
+
+    /**
+     * @var IuguService
+     */
+    private $iuguService;
 
     /**
      * IuguCustomerHandler constructor.
      * @param Request $request
+     * @param IuguService $iuguService
      */
     public function __construct(Request $request)
     {
         Iugu::setApiKey(config('slash-command-iugu-handler.token'));
+        $this->iuguService = new IuguService;
+
         parent::__construct($request);
     }
 
@@ -57,7 +65,6 @@ class IuguCustomerHandler extends SignatureHandler
 
         $slackAttachment->addFields($customerData['invoices']->all());
 
-
         return $slackResponse
             ->withAttachment($slackAttachment);
 //            ->displayResponseToEveryoneOnChannel();
@@ -69,20 +76,20 @@ class IuguCustomerHandler extends SignatureHandler
      */
     protected function getCustomerData($customerEmail)
     {
-        $response = Iugu_Customer::search(['limit' => 1, 'query' => $customerEmail])->results();
+        //        $response = Iugu_Customer::search(['limit' => 1, 'query' => $customerEmail])->results();
+        $response = $this->iuguService->customer()->find(['limit' => 1, 'query' => $customerEmail]);
 
         $customer = collect($response);
 
         if ($customer->count() === 0) {
-           return collect();
+            return collect();
         }
 
-        return $customer->map(function($customerProps) {
+        return $customer->map(function ($customerProps) {
             $invoices = collect(Iugu_Subscription::search(['customer_id' => $customerProps->id])->results());
 
             return $this->formatCustomerData($customerProps, $invoices);
         })->first();
-
     }
 
     /**
@@ -95,16 +102,16 @@ class IuguCustomerHandler extends SignatureHandler
         $customerData = [];
         $customerData['name'] = $customerProps->name;
         $customerData['cnpj'] = $customerProps->cpf_cnpj;
-        $invoices->map(function($invoice) use(&$customerData) {
+        $invoices->map(function ($invoice) use (&$customerData) {
             $customerData['invoices'][$invoice->id]['active'] = $invoice->active;
             $customerData['invoices'][$invoice->id]['in_trial'] = $invoice->in_trial;
             $customerData['invoices'][$invoice->id]['expires_at'] = $invoice->expires_at;
             $customerData['invoices'][$invoice->id]['plan'] = $invoice->plan_identifier;
-            $customerData['invoices'][$invoice->id]['price'] = number_format($invoice->price_cents / 100,2,",",".");;
+            $customerData['invoices'][$invoice->id]['price'] = number_format($invoice->price_cents / 100, 2, ',', '.');
         });
 
-        $customerData['invoices'] = collect(collect($customerData['invoices'])->first())->transform(function($item, $key) {
-            if($item == null) {
+        $customerData['invoices'] = collect(collect($customerData['invoices'])->first())->transform(function ($item, $key) {
+            if ($item == null) {
                 return $item = '';
             }
 
@@ -113,5 +120,4 @@ class IuguCustomerHandler extends SignatureHandler
 
         return $customerData;
     }
-
 }
