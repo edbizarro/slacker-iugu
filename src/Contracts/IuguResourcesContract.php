@@ -4,7 +4,6 @@ namespace Edbizarro\Slacker\Iugu\Contracts;
 
 use APIResource;
 use Illuminate\Support\Collection;
-use Iugu_SearchResult;
 
 /**
  * Interface IuguResourcesContract.

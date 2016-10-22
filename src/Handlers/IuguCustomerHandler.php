@@ -2,6 +2,7 @@
 
 namespace Edbizarro\Slacker\Iugu\Handlers;
 
+use Carbon\Carbon;
 use Edbizarro\Slacker\Iugu\Services\IuguService;
 use Illuminate\Support\Collection;
 use Spatie\SlashCommand\Attachment;
@@ -22,6 +23,15 @@ class IuguCustomerHandler extends SignatureHandler
      * @var IuguService
      */
     protected $iuguService;
+
+    protected $responseFields = [
+        'name' => 'nome',
+        'active' => 'ativa',
+        'in_trial' => 'trial',
+        'plan_name' => 'plano assinado',
+        'price_cents' => 'valor da assinatura',
+        'expires_at' => 'data de expiração',
+    ];
 
     /**
      * IuguCustomerHandler constructor.
@@ -46,7 +56,7 @@ class IuguCustomerHandler extends SignatureHandler
 
         $customerData = $this->getCustomerData($customerEmail);
 
-        if (count($customerData) == 0) {
+        if ($customerData->count() === 0) {
             return Response::create($request)
                 ->withAttachment(
                     Attachment::create()
@@ -61,10 +71,9 @@ class IuguCustomerHandler extends SignatureHandler
 
         $slackAttachment = Attachment::create()
             ->setColor(Attachment::COLOR_GOOD)
-            ->setTitle($customerData['name'])
             ->setPreText('Iugu customer info.');
 
-        $slackAttachment->addFields($customerData['invoices']->all());
+        $slackAttachment->addFields($customerData->all());
 
         return $slackResponse->withAttachment($slackAttachment);
     }
@@ -73,17 +82,15 @@ class IuguCustomerHandler extends SignatureHandler
      * @param $customerEmail
      * @return Collection
      */
-    protected function getCustomerData($customerEmail)
+    protected function getCustomerData($customerEmail): Collection
     {
-        $response = $this->iuguService->customer()->find(['limit' => 1, 'query' => $customerEmail]);
-
-        $customer = $response;
+        $customer = $this->iuguService->customer()->find(['limit' => 1, 'query' => $customerEmail]);
 
         if ($customer->count() === 0) {
             return collect();
         }
 
-        return $customer->map(function ($customerProps) use ($customer) {
+        return collect($customer->map(function ($customerProps) use ($customer) {
             if ($customer->count() === 1) {
                 $customerProps = $customer->first();
             }
@@ -91,32 +98,36 @@ class IuguCustomerHandler extends SignatureHandler
             $invoices = $this->iuguService->subscription()->find(['customer_id' => $customerProps['id']]);
 
             return $this->formatCustomerData($customerProps, $invoices);
-        })->first();
+        })->first());
     }
 
     /**
      * @param array $customerProps
      * @param Collection $invoices
-     * @return array
+     * @return Collection
      */
-    protected function formatCustomerData(array $customerProps, Collection $invoices)
+    protected function formatCustomerData(array $customerProps, Collection $invoices): Collection
     {
         $customerData = [];
-        $customerData['name'] = $customerProps['name'];
-        $customerData['cnpj'] = $customerProps['cpf_cnpj'];
 
-        $customerData = $invoices->reduce(function ($customerData, $invoice) {
-            $customerData['invoices'][$invoice['id']]['active'] = $invoice['active'];
-            $customerData['invoices'][$invoice['id']]['in_trial'] = $invoice['in_trial'];
-            $customerData['invoices'][$invoice['id']]['expires_at'] = $invoice['expires_at'];
-            $customerData['invoices'][$invoice['id']]['plan'] = $invoice['plan_name'];
-            $customerData['invoices'][$invoice['id']]['price'] = number_format($invoice['price_cents'] / 100, 2, ',', '.');
+        $customerData = $invoices->reduce(function ($customerData, $invoice) use ($customerProps) {
+
+            $customerData[$invoice['id']]['nome'] = $customerProps['name'];
+            $customerData[$invoice['id']]['cnpj'] = $customerProps['cpf_cnpj'];
+
+            $customerData[$invoice['id']]['Ativa'] = ($invoice['active'] == 1) ? 'sim' : 'não';
+            $customerData[$invoice['id']]['Trial'] = ($invoice['in_trial'] === null) ? 'não' : 'sim';
+            $customerData[$invoice['id']]['Expira em'] = (new Carbon($invoice['expires_at']))->format('d/m/Y');
+            $customerData[$invoice['id']]['Assinatura'] = $invoice['plan_name'];
+            $customerData[$invoice['id']]['Valor da assinatura'] = number_format($invoice['price_cents'] / 100, 2, ',', '.');
 
             return $customerData;
+
         }, $customerData);
 
-        $customerData['invoices'] = collect(
-                collect($customerData['invoices'])->first()
+
+        $customerData = collect(
+                collect($customerData)->first()
             )->transform(function ($item) {
                 if ($item == null) {
                     return $item = '';
