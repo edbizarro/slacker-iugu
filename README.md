@@ -2,9 +2,11 @@
 
 Based and inspired by [spatie/laravel-slack-slash-command](https://github.com/spatie/laravel-slack-slash-command)
 
+First of all, setup a Slash command at [Slack](https://api.slack.com/slash-commands) and installed this package into a Laravel app
+
 ## Usage
 
-Follow this steps to use this package on your Laravel installation
+Follow this steps to use this package in your Laravel installation
 
 ### 1. Require it on composer
 
@@ -17,7 +19,11 @@ composer require edbizarro/slacker-iugu
 You need to update your `config/app.php` configuration file to register our service provider, adding this line on `providers` array:
 
 ```php
-Edbizarro\Slacker\Iugu\Providers\SlackerIuguServiceProvider::class
+// config/app.php
+'providers' => [
+    ...
+    Edbizarro\Slacker\Iugu\Providers\SlackerIuguServiceProvider::class,
+];
 ```
 ## Configuration
 
