@@ -12,8 +12,8 @@ use Iugu_SearchResult;
 interface IuguResourcesContract
 {
     /**
-     * @param APIResource $apiResponse
+     * @param APIResource|array $apiResponse
      * @return Collection
      */
-    public function formatResponse(Iugu_SearchResult $apiResponse): Collection;
+    public function formatResponse($apiResponse): Collection;
 }

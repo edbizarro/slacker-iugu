@@ -4,6 +4,7 @@ namespace Edbizarro\Slacker\Iugu\Services;
 
 use Edbizarro\Slacker\Iugu\Contracts\IuguServiceContract;
 use Edbizarro\Slacker\Iugu\Services\Resources\Customer;
+use Edbizarro\Slacker\Iugu\Services\Resources\Subscription;
 use Iugu;
 
 /**
@@ -16,6 +17,10 @@ class IuguService implements IuguServiceContract
      */
     protected $iuguCustomer;
     protected $iuguPlan;
+
+    /**
+     * @var Subscription
+     */
     protected $iuguSubscription;
 
     /**
@@ -26,6 +31,7 @@ class IuguService implements IuguServiceContract
         Iugu::setApiKey(config('slash-command-iugu-handler.token'));
 
         $this->iuguCustomer = new Customer;
+        $this->iuguSubscription = new Subscription;
     }
 
     /**
@@ -34,5 +40,13 @@ class IuguService implements IuguServiceContract
     public function customer(): Customer
     {
         return $this->iuguCustomer;
+    }
+
+    /**
+     * @return Subscription
+     */
+    public function subscription(): Subscription
+    {
+        return $this->iuguSubscription;
     }
 }

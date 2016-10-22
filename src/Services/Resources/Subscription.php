@@ -2,17 +2,16 @@
 
 namespace Edbizarro\Slacker\Iugu\Services\Resources;
 
-use Iugu_Customer;
+use Iugu_Subscription;
 
 /**
- * Class Customer.
+ * Class Subscription.
  */
-class Customer extends IuguResource
+class Subscription extends IuguResource
 {
     /**
-     * @var Iugu_Customer
+     * @var Iugu_Subscription
      */
-    protected $iuguCustomer;
     protected $iuguSubscription;
 
     /**
@@ -20,18 +19,17 @@ class Customer extends IuguResource
      */
     public function __construct()
     {
-        $this->iuguCustomer = new Iugu_Customer;
-        $this->iuguSubscription = new Subscription;
+        $this->iuguSubscription = new Iugu_Subscription;
     }
 
     /**
      * @param $key
-     * @return \Illuminate\Support\Collection|void
+     * @return \Illuminate\Support\Collection
      */
     public function get($key)
     {
         return $this->formatResponse(
-            $this->iuguCustomer->fetch($key)
+            $this->iuguSubscription->fetch($key)
         );
     }
 
@@ -42,15 +40,7 @@ class Customer extends IuguResource
     public function find(array $options = [])
     {
         return $this->formatResponse(
-            $this->iuguCustomer->search($options)
+            $this->iuguSubscription->search($options)
         );
-    }
-
-    /**
-     * @return Subscription
-     */
-    public function subscription(): Subscription
-    {
-        return $this->iuguSubscription;
     }
 }

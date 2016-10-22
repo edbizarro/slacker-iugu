@@ -4,9 +4,6 @@ namespace Edbizarro\Slacker\Iugu\Handlers;
 
 use Edbizarro\Slacker\Iugu\Services\IuguService;
 use Illuminate\Support\Collection;
-use Iugu;
-use Iugu_Customer;
-use Iugu_Subscription;
 use Spatie\SlashCommand\Attachment;
 use Spatie\SlashCommand\Request;
 use Spatie\SlashCommand\Response;
@@ -24,17 +21,17 @@ class IuguCustomerHandler extends SignatureHandler
     /**
      * @var IuguService
      */
-    private $iuguService;
+    protected $iuguService;
 
     /**
      * IuguCustomerHandler constructor.
+     *
      * @param Request $request
      * @param IuguService $iuguService
      */
     public function __construct(Request $request)
     {
-        Iugu::setApiKey(config('slash-command-iugu-handler.token'));
-        $this->iuguService = new IuguService;
+        $this->iuguService = app()->make(IuguService::class);
 
         parent::__construct($request);
     }
@@ -52,7 +49,11 @@ class IuguCustomerHandler extends SignatureHandler
         if (count($customerData) == 0) {
             return Response::create($request)
                 ->withAttachment(
-                    Attachment::create()->setColor(Attachment::COLOR_WARNING)->setText('No results found.')
+                    Attachment::create()
+                        ->setColor(
+                            Attachment::COLOR_WARNING
+                        )
+                        ->setText('No results found.')
                 );
         }
 
@@ -61,13 +62,11 @@ class IuguCustomerHandler extends SignatureHandler
         $slackAttachment = Attachment::create()
             ->setColor(Attachment::COLOR_GOOD)
             ->setTitle($customerData['name'])
-            ->setPreText('Iugu customer info');
+            ->setPreText('Iugu customer info.');
 
         $slackAttachment->addFields($customerData['invoices']->all());
 
-        return $slackResponse
-            ->withAttachment($slackAttachment);
-//            ->displayResponseToEveryoneOnChannel();
+        return $slackResponse->withAttachment($slackAttachment);
     }
 
     /**
@@ -76,47 +75,55 @@ class IuguCustomerHandler extends SignatureHandler
      */
     protected function getCustomerData($customerEmail)
     {
-        //        $response = Iugu_Customer::search(['limit' => 1, 'query' => $customerEmail])->results();
         $response = $this->iuguService->customer()->find(['limit' => 1, 'query' => $customerEmail]);
 
-        $customer = collect($response);
+        $customer = $response;
 
         if ($customer->count() === 0) {
             return collect();
         }
 
-        return $customer->map(function ($customerProps) {
-            $invoices = collect(Iugu_Subscription::search(['customer_id' => $customerProps->id])->results());
+        return $customer->map(function ($customerProps) use ($customer) {
+            if ($customer->count() === 1) {
+                $customerProps = $customer->first();
+            }
+
+            $invoices = $this->iuguService->subscription()->find(['customer_id' => $customerProps['id']]);
 
             return $this->formatCustomerData($customerProps, $invoices);
         })->first();
     }
 
     /**
-     * @param Iugu_Customer $customerProps
+     * @param array $customerProps
      * @param Collection $invoices
      * @return array
      */
-    protected function formatCustomerData(Iugu_Customer $customerProps, Collection $invoices)
+    protected function formatCustomerData(array $customerProps, Collection $invoices)
     {
         $customerData = [];
-        $customerData['name'] = $customerProps->name;
-        $customerData['cnpj'] = $customerProps->cpf_cnpj;
-        $invoices->map(function ($invoice) use (&$customerData) {
-            $customerData['invoices'][$invoice->id]['active'] = $invoice->active;
-            $customerData['invoices'][$invoice->id]['in_trial'] = $invoice->in_trial;
-            $customerData['invoices'][$invoice->id]['expires_at'] = $invoice->expires_at;
-            $customerData['invoices'][$invoice->id]['plan'] = $invoice->plan_identifier;
-            $customerData['invoices'][$invoice->id]['price'] = number_format($invoice->price_cents / 100, 2, ',', '.');
-        });
+        $customerData['name'] = $customerProps['name'];
+        $customerData['cnpj'] = $customerProps['cpf_cnpj'];
 
-        $customerData['invoices'] = collect(collect($customerData['invoices'])->first())->transform(function ($item, $key) {
-            if ($item == null) {
-                return $item = '';
-            }
+        $customerData = $invoices->reduce(function ($customerData, $invoice) {
+            $customerData['invoices'][$invoice['id']]['active'] = $invoice['active'];
+            $customerData['invoices'][$invoice['id']]['in_trial'] = $invoice['in_trial'];
+            $customerData['invoices'][$invoice['id']]['expires_at'] = $invoice['expires_at'];
+            $customerData['invoices'][$invoice['id']]['plan'] = $invoice['plan_name'];
+            $customerData['invoices'][$invoice['id']]['price'] = number_format($invoice['price_cents'] / 100, 2, ',', '.');
 
-            return $item;
-        });
+            return $customerData;
+        }, $customerData);
+
+        $customerData['invoices'] = collect(
+                collect($customerData['invoices'])->first()
+            )->transform(function ($item) {
+                if ($item == null) {
+                    return $item = '';
+                }
+
+                return $item;
+            });
 
         return $customerData;
     }
