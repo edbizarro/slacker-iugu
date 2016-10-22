@@ -45,7 +45,7 @@ return [
 ];
 ```
 
-Note that this file uses environment variables, it's a good practice put your secret keys on your `.env` file adding this lines on it:
+Note that this file uses environment variables, it's a good practice put your secret keys in your `.env` file adding this lines on it:
 
 
 ```
