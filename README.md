@@ -6,7 +6,7 @@
 
 Based and inspired by [spatie/laravel-slack-slash-command](https://github.com/spatie/laravel-slack-slash-command)
 
-First of all, setup a Slash command at [Slack](https://api.slack.com/slash-commands) and install this package into a Laravel app
+First of all [setup a Slash command](https://docs.spatie.be/laravel-slack-slash-command/v1/installation-and-setup) and install this package into a Laravel app.
 
 ## Usage
 
