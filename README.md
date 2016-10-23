@@ -20,7 +20,7 @@ composer require edbizarro/slacker-iugu
 
 ### 2. Load service provider
 
-You need to update your `config/app.php` configuration file to register our service provider, adding this line on `providers` array:
+You need to update your `config/app.php` configuration file to register our service provider, adding this lines on `providers` array:
 
 ```php
 // config/app.php
