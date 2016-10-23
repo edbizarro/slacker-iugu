@@ -10,15 +10,13 @@ use Spatie\SlashCommand\SlashCommandServiceProvider;
 /**
  * Class SlackerIuguServiceProvider.
  */
-class SlackerIuguServiceProvider extends SlashCommandServiceProvider
+class SlackerIuguServiceProvider extends ServiceProvider
 {
     /**
      * Bootstrap the application services.
      */
     public function boot()
     {
-        parent::boot();
-
         if ($this->isLumen()) {
             $this->app->configure('slash-command-iugu-handler');
         }
@@ -41,8 +39,6 @@ class SlackerIuguServiceProvider extends SlashCommandServiceProvider
 
     public function register()
     {
-        parent::register();
-
         $this->app->bind(IuguServiceContract::class, function ($app) {
             return new IuguService;
         });
