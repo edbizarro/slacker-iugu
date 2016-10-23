@@ -5,7 +5,6 @@ namespace Edbizarro\Slacker\Iugu\Providers;
 use Edbizarro\Slacker\Iugu\Contracts\IuguServiceContract;
 use Edbizarro\Slacker\Iugu\Services\IuguService;
 use Illuminate\Support\ServiceProvider;
-use Spatie\SlashCommand\SlashCommandServiceProvider;
 
 /**
  * Class SlackerIuguServiceProvider.
