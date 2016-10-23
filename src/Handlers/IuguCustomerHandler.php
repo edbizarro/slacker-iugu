@@ -123,7 +123,6 @@ class IuguCustomerHandler extends SignatureHandler
             return $customerData;
         }, $customerData);
 
-
         $customerData = collect(
                 collect($customerData)->first()
             )->transform(function ($item) {
