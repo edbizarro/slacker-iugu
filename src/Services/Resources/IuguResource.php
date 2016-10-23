@@ -43,7 +43,6 @@ class IuguResource implements IuguResourcesContract
             return collect($result);
         }
 
-
         $result = collect($responseKeys)->map(function ($item) {
             $iuguResultObject = $item->results()[0];
 

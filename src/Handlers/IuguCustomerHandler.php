@@ -111,7 +111,6 @@ class IuguCustomerHandler extends SignatureHandler
         $customerData = [];
 
         $customerData = $invoices->reduce(function ($customerData, $invoice) use ($customerProps) {
-
             $customerData[$invoice['id']]['nome'] = $customerProps['name'];
             $customerData[$invoice['id']]['cnpj'] = $customerProps['cpf_cnpj'];
 
@@ -122,9 +121,7 @@ class IuguCustomerHandler extends SignatureHandler
             $customerData[$invoice['id']]['Valor da assinatura'] = number_format($invoice['price_cents'] / 100, 2, ',', '.');
 
             return $customerData;
-
         }, $customerData);
-
 
         $customerData = collect(
                 collect($customerData)->first()
