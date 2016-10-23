@@ -26,6 +26,7 @@ You need to update your `config/app.php` configuration file to register our serv
 // config/app.php
 'providers' => [
     ...
+    Spatie\SlashCommand\SlashCommandServiceProvider::class,
     Edbizarro\Slacker\Iugu\Providers\SlackerIuguServiceProvider::class,
 ];
 ```
