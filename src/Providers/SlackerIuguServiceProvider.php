@@ -34,7 +34,6 @@ class SlackerIuguServiceProvider extends ServiceProvider
                 config('laravel-slack-slash-command.handlers')
             )]);
         }
-
     }
 
     public function register()
