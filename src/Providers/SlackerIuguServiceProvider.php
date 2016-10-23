@@ -5,6 +5,7 @@ namespace Edbizarro\Slacker\Iugu\Providers;
 use Edbizarro\Slacker\Iugu\Contracts\IuguServiceContract;
 use Edbizarro\Slacker\Iugu\Services\IuguService;
 use Illuminate\Support\ServiceProvider;
+use Spatie\SlashCommand\SlashCommandServiceProvider;
 
 /**
  * Class SlackerIuguServiceProvider.
@@ -38,6 +39,10 @@ class SlackerIuguServiceProvider extends ServiceProvider
 
     public function register()
     {
+        $this->app->register(
+            SlashCommandServiceProvider::class
+        );
+
         $this->app->bind(IuguServiceContract::class, function ($app) {
             return new IuguService;
         });
