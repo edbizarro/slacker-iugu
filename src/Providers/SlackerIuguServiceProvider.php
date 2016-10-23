@@ -28,7 +28,7 @@ class SlackerIuguServiceProvider extends ServiceProvider
 
         $this->mergeConfigFrom(__DIR__.'/../../config/slash-command-iugu-handler.php', 'slash-command-iugu-handler');
 
-        if (is_array(config('slash-command-iugu-handler.handlers'))) {
+        if (is_array(config('laravel-slack-slash-command.handlers'))) {
             config(['laravel-slack-slash-command.handlers' => array_merge(
                 config('slash-command-iugu-handler.handlers'),
                 config('laravel-slack-slash-command.handlers')
