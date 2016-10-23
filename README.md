@@ -1,4 +1,8 @@
 # Slacker Iugu - Slack Slash command Iugu handler
+[![Packagist](https://img.shields.io/packagist/v/edbizarro/slacker-iugu.svg)](https://packagist.org/packages/edbizarro/slacker-iugu) 
+[![Build Status](https://travis-ci.org/edbizarro/slacker-iugu.svg?branch=master)](https://travis-ci.org/edbizarro/slacker-iugu)
+[![StyleCI](https://styleci.io/repos/71378457/shield?branch=master)](https://styleci.io/repos/71378457)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7f1a680b4bd848ef8a3b8bcf90039b2e)](https://www.codacy.com/app/Zendev/slacker-iugu?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=edbizarro/slacker-iugu&amp;utm_campaign=Badge_Grade)
 
 Based and inspired by [spatie/laravel-slack-slash-command](https://github.com/spatie/laravel-slack-slash-command)
 
